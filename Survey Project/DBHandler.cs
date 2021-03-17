@@ -11,16 +11,7 @@ namespace Survey_Project
         {
             var db = new ApplicationContext();
             db.Forms.Add(form);
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                Console.WriteLine("Form isn't found!");
-                throw;
-            }
-            
+            db.SaveChanges();
             Console.WriteLine("Successfully added!");
         }
 
@@ -28,10 +19,31 @@ namespace Survey_Project
         {
             var db = new ApplicationContext();
             var forms = db.Forms.ToList();
-            Console.WriteLine("Forms:");
-            foreach (var form in forms)
+            if (forms.Capacity == 0)
             {
-                Console.WriteLine($"ID:{form.Id}. Date Birth: {form.Date} - Programming language: {form.ProgLang} - Experience(in years): {form.Experience}");
+                Console.WriteLine("There are no forms!");
+            }
+            else
+            {
+                Console.WriteLine("Forms:");
+                foreach (var form in forms)
+                {
+                    Console.WriteLine($"ID:{form.Id}. Date Birth: {form.Date} - Programming language: {form.ProgLang} - Experience(in years): {form.Experience} - Phone Number: {form.PhoneNumber}");
+                } 
+            }
+        }
+
+        public static void GetForm(int id)
+        {
+            var db = new ApplicationContext();
+            try
+            {
+                var entity = db.Forms.First(f => f.Id == id);
+                Console.WriteLine(($"ID:{entity.Id}. Date Birth: {entity.Date} - Programming language: {entity.ProgLang} - Experience(in years): {entity.Experience} - Phone Number: {entity.PhoneNumber}"));
+            }
+            catch (InvalidOperationException)
+            {
+                Console.WriteLine("There is no form for this id!");
             }
         }
 
@@ -40,7 +52,15 @@ namespace Survey_Project
             var db = new ApplicationContext();
             var entity = new Form() {Id = id};
             db.Forms.Remove(entity);
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                Console.WriteLine("Form isn't found!");
+                return;
+            }
             Console.WriteLine("Successfully removed!");
         }
         
@@ -60,7 +80,6 @@ namespace Survey_Project
         public class ApplicationContext : DbContext
         {
             public DbSet<Form> Forms { get; set; }
-
             public ApplicationContext()
             {
                 Database.EnsureCreated();
